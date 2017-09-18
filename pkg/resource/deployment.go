@@ -1,9 +1,10 @@
 package resource
 
 import (
+	"encoding/json"
+
 	"github.com/eirwin/copilot/pkg/format"
 	"github.com/eirwin/copilot/pkg/internal/k8s"
-	"github.com/json-iterator/go"
 )
 
 type DeploymentRequest struct {
@@ -13,31 +14,15 @@ type DeploymentRequest struct {
 
 type Deployment struct {
 	name      string `json:"name"`
-	desired   int    `json:"desired"`
-	current   int    `json:"current`
-	upToDate  int    `json:"upToDate"`
-	available int    `json:"available"`
+	desired   string `json:"desired"`
+	current   string `json:"current`
+	upToDate  string `json:"upToDate"`
+	available string `json:"available"`
 	age       string `json:"age"`
 }
 
 type DeploymentResult struct {
 	deployments []Deployment
-}
-
-func (d DeploymentResult) JSON() (string, error) {
-	json, err := jsoniter.MarshalIndent(d.deployments, defaultJSONPrefix, defaultJSONIndent)
-	if err != nil {
-		return "", err
-	}
-	return string(json), nil
-}
-
-func (d DeploymentResult) Columns() (string, error) {
-	formatter := format.NewColumnFormatter()
-	headers := deploymentColumnHeaders()
-	data := deploymentColumnData(d)
-	cols := formatter.Format(headers, data)
-	return cols, nil
 }
 
 func (r DeploymentRequest) Get(opts Options) Result {
@@ -59,27 +44,43 @@ func (r DeploymentRequest) Status(opts Options) Result {
 	}
 }
 
-func deploymentColumnHeaders() []string {
+func (r DeploymentResult) JSON() (string, error) {
+	json, err := json.MarshalIndent(r.deployments, defaultJSONPrefix, defaultJSONIndent)
+	if err != nil {
+		return "", err
+	}
+	return string(json), nil
+}
+
+func (r DeploymentResult) Columns() (string, error) {
+	formatter := format.NewColumnFormatter()
+	headers := r.Headers()
+	data := r.Data()
+	cols := formatter.Format(headers, data)
+	return cols, nil
+}
+
+func (r DeploymentResult) Headers() []string {
 	return []string{
-		"name",
-		"desired",
-		"current",
-		"upToDate",
-		"available",
-		"age",
+		"NAME",
+		"DESIRED",
+		"CURRENT",
+		"UP-TO-DATE",
+		"AVAILABLE",
+		"AGE",
 	}
 }
 
-func deploymentColumnData(result DeploymentResult) [][]string {
+func (r DeploymentResult) Data() [][]string {
 	var data [][]string
-	for _, d := range result.deployments {
+	for _, d := range r.deployments {
 		data = append(data, []string{
 			d.name,
-			string(d.desired),
-			string(d.current),
-			string(d.upToDate),
-			string(d.available),
-			string(d.age),
+			d.desired,
+			d.current,
+			d.upToDate,
+			d.available,
+			d.age,
 		})
 	}
 	return data

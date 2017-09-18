@@ -16,4 +16,6 @@ type ColumnFormatter interface {
 type Result interface {
 	JSONFormatter
 	ColumnFormatter
+	Data() [][]string
+	Headers() []string
 }

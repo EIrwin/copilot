@@ -19,22 +19,6 @@ type ServiceResult struct {
 	services []Service
 }
 
-func (s ServiceResult) JSON() (string, error) {
-	json, err := jsoniter.MarshalIndent(s.services, defaultJSONPrefix, defaultJSONIndent)
-	if err != nil {
-		return "", err
-	}
-	return string(json), nil
-}
-
-func (s ServiceResult) Columns() (string, error) {
-	formatter := format.NewColumnFormatter()
-	headers := serviceColumnHeaders()
-	data := serviceColumnData(s)
-	cols := formatter.Format(headers, data)
-	return cols, nil
-}
-
 func (r ServiceRequest) Get(opts Options) Result {
 	return ServiceResult{
 		services: []Service{},
@@ -53,19 +37,35 @@ func (r ServiceRequest) Status(opts Options) Result {
 	}
 }
 
-func serviceColumnHeaders() []string {
+func (r ServiceResult) JSON() (string, error) {
+	json, err := jsoniter.MarshalIndent(r.services, defaultJSONPrefix, defaultJSONIndent)
+	if err != nil {
+		return "", err
+	}
+	return string(json), nil
+}
+
+func (r ServiceResult) Columns() (string, error) {
+	formatter := format.NewColumnFormatter()
+	headers := r.Headers()
+	data := r.Data()
+	cols := formatter.Format(headers, data)
+	return cols, nil
+}
+
+func (r ServiceResult) Headers() []string {
 	return []string{
-		"name",
-		"clusterIP",
-		"externalIP",
-		"ports",
-		"age",
+		"NAME",
+		"CLUSTER-IP",
+		"EXTERNAL-IP",
+		"PORTS",
+		"AGE",
 	}
 }
 
-func serviceColumnData(result ServiceResult) [][]string {
+func (r ServiceResult) Data() [][]string {
 	var data [][]string
-	for _, d := range result.services {
+	for _, d := range r.services {
 		data = append(data, []string{
 			d.name,
 			d.clusterIP,
