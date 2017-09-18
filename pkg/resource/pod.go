@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/eirwin/copilot/pkg/format"
-	"github.com/eirwin/copilot/pkg/internal/k8s"
+	"github.com/eirwin/copilot/pkg/k8s"
 )
 
 type PodRequest struct {

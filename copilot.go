@@ -1,36 +1,44 @@
 package copilot
 
-import "github.com/eirwin/copilot/pkg/resource"
+import (
+	"log"
+
+	"github.com/eirwin/copilot/pkg/k8s"
+	"github.com/eirwin/copilot/pkg/resource"
+)
 
 type Service interface {
 	Run(cmd Command) (string, error)
 }
 
 type service struct {
+	kubernetes k8s.Service
 }
 
-type Config struct {
-}
-
-func NewService(config Config) (Service, error) {
-	return service{}, nil
+func NewService(kubernetes k8s.Service) Service {
+	return service{
+		kubernetes: kubernetes,
+	}
 }
 
 func (s service) Run(cmd Command) (string, error) {
 
-	switch cmd.action {
+	var result resource.Result
+	switch cmd.operation {
 	case "get":
-		req := resource.NewRequest(cmd.resource).Get(nil)
+		result = resource.NewRequest(cmd.resource).Get(nil)
 		break
 	case "logs":
-		req := resource.NewRequest(cmd.resource).Logs(nil)
+		result = resource.NewRequest(cmd.resource).Logs(nil)
 		break
 	case "status":
-		req := resource.NewRequest(cmd.resource).Status(nil)
+		result = resource.NewRequest(cmd.resource).Status(nil)
 		break
 	}
 
+	log.Println(result)
+
 	//TODO: format output
 
-	return nil
+	return "", nil
 }

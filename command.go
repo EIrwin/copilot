@@ -3,8 +3,8 @@ package copilot
 type Command struct {
 	namespace string
 	resource  string
-	action    string
-	options   map[string]string
+	operation string
+	flags     map[string]string
 }
 
 func ParseCommand(cmd string) (Command, error) {

@@ -1,38 +1,28 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
-	"github.com/eirwin/kubes"
+	"github.com/eirwin/copilot"
+	"github.com/eirwin/copilot/pkg/config"
 )
 
-func main() {
-	//TODO: parse config
+func init() {
+	path := flag.String("path", "", "Absolute path to local configuration")
 
-	const url = ""
-	http.HandleFunc("/", kubesHandler)
+	flag.Parse()
 
-	log.Fatal(http.ListenAndServe(url, nil))
+	err := config.Init(*path)
+	if err != nil {
+		log.Panicln(err)
+	}
 }
 
-func kubesHandler(w http.ResponseWriter, r *http.Request) {
-	text := ""
-	cmd, err := kubes.ParseCommand(text)
-	if err != nil {
-		log.Fatalln(err)
-	}
+func main() {
+	http.HandleFunc("/", copilot.CopilotHandler)
+	http.HandleFunc("/help", copilot.HelpHandler)
 
-	config := kubes.Config{}
-	service, err := kubes.NewService(config)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	output, err := service.Run(cmd)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	log.Println(output)
+	log.Fatal(http.ListenAndServe(":"+config.Port(), nil))
 }

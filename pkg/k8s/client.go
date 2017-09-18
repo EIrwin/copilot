@@ -10,6 +10,13 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+func NewClient(configPath string) (*kubernetes.Clientset, error) {
+	if configPath == "" {
+		return NewClientFromConfig(&configPath)
+	}
+	return NewInClusterClient()
+}
+
 func NewInClusterClient() (*kubernetes.Clientset, error) {
 
 	config, err := rest.InClusterConfig()
