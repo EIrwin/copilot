@@ -1,5 +1,7 @@
 package resource
 
+import "github.com/eirwin/copilot/pkg/k8s"
+
 type Getter interface {
 	Get(opt Options) Result
 }
@@ -20,18 +22,37 @@ type Request interface {
 
 type Options map[string]string
 
-func NewRequest(name string) Request {
+type RequestFactory struct {
+	service k8s.Kubernetes
+}
+
+func NewRequestFactory(kubernetes k8s.Kubernetes) RequestFactory {
+	return RequestFactory{
+		service: kubernetes,
+	}
+}
+
+func (b RequestFactory) NewRequest(name, namespace string) Request {
 
 	var req Request
 	switch name {
 	case "pod":
-		req = PodRequest{}
+		req = PodRequest{
+			service:   b.service,
+			namespace: namespace,
+		}
 		break
 	case "deployment":
-		req = DeploymentRequest{}
+		req = DeploymentRequest{
+			service:   b.service,
+			namespace: namespace,
+		}
 		break
 	case "service":
-		req = ServiceRequest{}
+		req = ServiceRequest{
+			service:   b.service,
+			namespace: namespace,
+		}
 		break
 	}
 

@@ -9,43 +9,57 @@ import (
 
 type DeploymentRequest struct {
 	namespace string
-	service   k8s.Service
+	service   k8s.Kubernetes
 }
 
 type Deployment struct {
-	name      string `json:"name"`
-	desired   string `json:"desired"`
-	current   string `json:"current`
-	upToDate  string `json:"upToDate"`
-	available string `json:"available"`
-	age       string `json:"age"`
+	Name      string `json:"name"`
+	Desired   string `json:"desired"`
+	Current   string `json:"current`
+	UpToDate  string `json:"upToDate"`
+	Available string `json:"available"`
+	Age       string `json:"age"`
 }
 
 type DeploymentResult struct {
-	deployments []Deployment
+	Deployments []Deployment
 }
 
 func (r DeploymentRequest) Get(opts Options) Result {
-	//r.clientSet.AppsV1beta1().Deployments(r.namespace).List()
+	var deployments []Deployment
+	deploymentList, _ := r.service.Deployments(r.namespace).List(k8s.ListOptions{})
+
+	for _, d := range deploymentList {
+		deployment := Deployment{
+			Name:      d.Name,
+			Desired:   d.Desired,
+			Current:   d.Current,
+			UpToDate:  d.UpToDate,
+			Available: d.Available,
+			Age:       d.Age,
+		}
+		deployments = append(deployments, deployment)
+	}
+
 	return DeploymentResult{
-		deployments: []Deployment{},
+		Deployments: deployments,
 	}
 }
 
 func (r DeploymentRequest) Logs(opts Options) Result {
 	return DeploymentResult{
-		deployments: []Deployment{},
+		Deployments: []Deployment{},
 	}
 }
 
 func (r DeploymentRequest) Status(opts Options) Result {
 	return DeploymentResult{
-		deployments: []Deployment{},
+		Deployments: []Deployment{},
 	}
 }
 
 func (r DeploymentResult) JSON() (string, error) {
-	json, err := json.MarshalIndent(r.deployments, defaultJSONPrefix, defaultJSONIndent)
+	json, err := json.MarshalIndent(r.Deployments, defaultJSONPrefix, defaultJSONIndent)
 	if err != nil {
 		return "", err
 	}
@@ -73,14 +87,14 @@ func (r DeploymentResult) Headers() []string {
 
 func (r DeploymentResult) Data() [][]string {
 	var data [][]string
-	for _, d := range r.deployments {
+	for _, d := range r.Deployments {
 		data = append(data, []string{
-			d.name,
-			d.desired,
-			d.current,
-			d.upToDate,
-			d.available,
-			d.age,
+			d.Name,
+			d.Desired,
+			d.Current,
+			d.UpToDate,
+			d.Available,
+			d.Age,
 		})
 	}
 	return data

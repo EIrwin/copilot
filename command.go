@@ -5,17 +5,24 @@ type Command struct {
 	resource  string
 	operation string
 	flags     map[string]string
+	output    string
 }
+
+const (
+	defaultOutput = "columns"
+)
 
 func ParseCommand(cmd string) (Command, error) {
 
-	//TODO: validate cmd format
+	namepace := "staging"
+	resouce := "service"
+	operation := "get"
+	output := defaultOutput
 
-	//TODO: parse resource
-
-	//TODO: parse action
-
-	//TODO: parse options
-
-	return Command{}, nil
+	return Command{
+		namespace: namepace,
+		resource:  resouce,
+		operation: operation,
+		output:    output,
+	}, nil
 }

@@ -1,8 +1,6 @@
 package copilot
 
 import (
-	"log"
-
 	"github.com/eirwin/copilot/pkg/k8s"
 	"github.com/eirwin/copilot/pkg/resource"
 )
@@ -12,10 +10,10 @@ type Service interface {
 }
 
 type service struct {
-	kubernetes k8s.Service
+	kubernetes k8s.Kubernetes
 }
 
-func NewService(kubernetes k8s.Service) Service {
+func NewService(kubernetes k8s.Kubernetes) Service {
 	return service{
 		kubernetes: kubernetes,
 	}
@@ -23,22 +21,25 @@ func NewService(kubernetes k8s.Service) Service {
 
 func (s service) Run(cmd Command) (string, error) {
 
+	factory := resource.NewRequestFactory(s.kubernetes)
+
 	var result resource.Result
 	switch cmd.operation {
 	case "get":
-		result = resource.NewRequest(cmd.resource).Get(nil)
+		result = factory.NewRequest(cmd.resource, cmd.namespace).Get(nil)
 		break
 	case "logs":
-		result = resource.NewRequest(cmd.resource).Logs(nil)
+		result = factory.NewRequest(cmd.resource, cmd.namespace).Logs(nil)
 		break
 	case "status":
-		result = resource.NewRequest(cmd.resource).Status(nil)
+		result = factory.NewRequest(cmd.resource, cmd.namespace).Status(nil)
 		break
 	}
 
-	log.Println(result)
+	cols, err := result.Columns()
+	if err != nil {
+		return "", err
+	}
 
-	//TODO: format output
-
-	return "", nil
+	return cols, nil
 }

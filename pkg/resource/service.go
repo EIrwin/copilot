@@ -2,43 +2,62 @@ package resource
 
 import (
 	"github.com/eirwin/copilot/pkg/format"
-	"github.com/json-iterator/go"
+	"github.com/eirwin/copilot/pkg/k8s"
+	jsoniter "github.com/json-iterator/go"
 )
 
-type ServiceRequest struct{}
+type ServiceRequest struct {
+	namespace string
+	service   k8s.Kubernetes
+}
 
 type Service struct {
-	name       string `json:"name"`
-	clusterIP  string `json:"clusterIp"`
-	externalIP string `json:"externalIp"`
-	ports      string `json:"ports"`
-	age        string `json:"age"`
+	Name       string `json:"name"`
+	ClusterIP  string `json:"clusterIp"`
+	ExternalIP string `json:"externalIp"`
+	Ports      string `json:"ports"`
+	Age        string `json:"age"`
 }
 
 type ServiceResult struct {
-	services []Service
+	Services []Service `json:"services"`
 }
 
 func (r ServiceRequest) Get(opts Options) Result {
+	var services []Service
+	serviceList, _ := r.service.Services(r.namespace).List(k8s.ListOptions{})
+
+	for _, s := range serviceList {
+		service := Service{
+			Name:       s.Name,
+			ClusterIP:  s.ClusterIP,
+			ExternalIP: s.ExternalIP,
+			Ports:      s.Ports,
+			Age:        s.Age,
+		}
+
+		services = append(services, service)
+	}
+
 	return ServiceResult{
-		services: []Service{},
+		Services: services,
 	}
 }
 
 func (r ServiceRequest) Logs(opts Options) Result {
 	return ServiceResult{
-		services: []Service{},
+		Services: []Service{},
 	}
 }
 
 func (r ServiceRequest) Status(opts Options) Result {
 	return ServiceResult{
-		services: []Service{},
+		Services: []Service{},
 	}
 }
 
 func (r ServiceResult) JSON() (string, error) {
-	json, err := jsoniter.MarshalIndent(r.services, defaultJSONPrefix, defaultJSONIndent)
+	json, err := jsoniter.MarshalIndent(r, defaultJSONPrefix, defaultJSONIndent)
 	if err != nil {
 		return "", err
 	}
@@ -65,13 +84,13 @@ func (r ServiceResult) Headers() []string {
 
 func (r ServiceResult) Data() [][]string {
 	var data [][]string
-	for _, d := range r.services {
+	for _, d := range r.Services {
 		data = append(data, []string{
-			d.name,
-			d.clusterIP,
-			d.externalIP,
-			d.ports,
-			d.age,
+			d.Name,
+			d.ClusterIP,
+			d.ExternalIP,
+			d.Ports,
+			d.Age,
 		})
 	}
 	return data
