@@ -16,3 +16,5 @@
 .idea/kubes.iml
 .idea/modules.xml
 .idea/workspace.xml
+
+bin/server

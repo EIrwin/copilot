@@ -2,7 +2,6 @@ package copilot
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"fmt"
@@ -15,38 +14,49 @@ import (
 	"github.com/eirwin/copilot/pkg/k8s"
 )
 
-func CopilotHandler(w http.ResponseWriter, r *http.Request) {
+type Server struct {
+	kubernetes k8s.Kubernetes
+}
+
+func NewServer(kubernetes k8s.Kubernetes) Server {
+	return Server{
+		kubernetes: kubernetes,
+	}
+}
+
+func (s Server) Handler(w http.ResponseWriter, r *http.Request) {
+
+	var output string
+	parser := CommandParser{}
 
 	// parse request text
 	text, err := parseText(config.SlackToken(), w, r)
 	if err != nil {
-		log.Fatalln(err)
+		output = parser.HelpWitMessage(err.Error())
+		respond(output, w, r)
+		return
 	}
 
-	cmd, err := ParseCommand(text)
+	// parse command from text
+	cmd, err := parser.Parse(text)
 	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// initialize service dependencies
-	client, err := k8s.NewClient(config.ConfigPath())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// initialize kubernetes service
-	kubernetes, err := k8s.NewService(client)
-	if err != nil {
-		log.Fatalln(err)
+		output = parser.Help()
+		respond(output, w, r)
+		return
 	}
 
 	// initialize copilot service
-	service := NewService(kubernetes)
-	output, err := service.Run(cmd)
+	service := NewService(s.kubernetes)
+	output, err = service.Run(cmd)
 	if err != nil {
-		log.Fatalln(err)
+		output = parser.Help()
+		respond(output, w, r)
 	}
 
+	respond(output, w, r)
+}
+
+func respond(output string, w http.ResponseWriter, r *http.Request) {
 	json, _ := json.Marshal(struct {
 		Type string `json:"response_type"`
 		Text string `json:"text"`
@@ -57,10 +67,6 @@ func CopilotHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
 	fmt.Fprintf(w, string(json))
-}
-
-func HelpHandler(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func parseText(token string, w http.ResponseWriter, r *http.Request) (string, error) {

@@ -12,9 +12,9 @@ import (
 
 func NewClient(configPath string) (*kubernetes.Clientset, error) {
 	if configPath == "" {
-		return NewClientFromConfig(&configPath)
+		return NewInClusterClient()
 	}
-	return NewInClusterClient()
+	return NewClientFromConfig(&configPath)
 }
 
 func NewInClusterClient() (*kubernetes.Clientset, error) {

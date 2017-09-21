@@ -21,25 +21,46 @@ func NewService(kubernetes k8s.Kubernetes) Service {
 
 func (s service) Run(cmd Command) (string, error) {
 
+	if cmd.Resource == "" {
+		return "", NewErrInvalidRunArgument("resource")
+	}
+
+	if cmd.Namespace == "" {
+		return "", NewErrInvalidRunArgument("namespace")
+	}
+
 	factory := resource.NewRequestFactory(s.kubernetes)
 
 	var result resource.Result
-	switch cmd.operation {
+	switch cmd.Operation {
 	case "get":
-		result = factory.NewRequest(cmd.resource, cmd.namespace).Get(nil)
+		result = factory.NewRequest(cmd.Resource, cmd.Namespace).Get(nil)
 		break
 	case "logs":
-		result = factory.NewRequest(cmd.resource, cmd.namespace).Logs(nil)
+		result = factory.NewRequest(cmd.Resource, cmd.Namespace).Logs(nil)
 		break
 	case "status":
-		result = factory.NewRequest(cmd.resource, cmd.namespace).Status(nil)
+		result = factory.NewRequest(cmd.Resource, cmd.Namespace).Status(nil)
 		break
 	}
 
-	cols, err := result.Columns()
+	output, err := formatOutput(result, cmd.Output)
 	if err != nil {
 		return "", err
 	}
 
-	return cols, nil
+	return output, nil
+}
+
+func formatOutput(result resource.Result, format string) (string, error) {
+	var output string
+	switch format {
+	case "json":
+		return result.JSON()
+	case "columns":
+		return result.Columns()
+	default:
+		return result.Columns()
+	}
+	return output, nil
 }

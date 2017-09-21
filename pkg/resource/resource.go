@@ -36,19 +36,19 @@ func (b RequestFactory) NewRequest(name, namespace string) Request {
 
 	var req Request
 	switch name {
-	case "pod":
+	case "pods":
 		req = PodRequest{
 			service:   b.service,
 			namespace: namespace,
 		}
 		break
-	case "deployment":
+	case "deployments":
 		req = DeploymentRequest{
 			service:   b.service,
 			namespace: namespace,
 		}
 		break
-	case "service":
+	case "services":
 		req = ServiceRequest{
 			service:   b.service,
 			namespace: namespace,

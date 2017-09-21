@@ -24,9 +24,14 @@ func TestCopilot(t *testing.T) {
 
 	service := NewService(kubernetesService)
 
-	cmd, _ := ParseCommand("")
+	types := []string{"pods", "deployments", "services"}
 
-	result, _ := service.Run(cmd)
-	log.Println("\n" + result)
+	for _, t := range types {
+		cmd, _ := ParseCommand(t)
+
+		result, _ := service.Run(cmd)
+
+		log.Println("\n" + result)
+	}
 
 }

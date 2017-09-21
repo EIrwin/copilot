@@ -1,8 +1,6 @@
 package k8s
 
 import (
-	"log"
-
 	"fmt"
 
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,7 +88,6 @@ func formatPorts(servicePorts []v1.ServicePort) string {
 	//TODO need to determine extended format
 	var ports string
 	for _, p := range servicePorts {
-		log.Println(p)
 		if ports != "" {
 			ports += ","
 		}
