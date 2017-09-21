@@ -25,7 +25,9 @@ func (s service) Run(cmd Command) (string, error) {
 		return "", NewErrInvalidRunArgument("resource")
 	}
 
-	if cmd.Namespace == "" {
+	// the following considers the exceptional case that the
+	// namespace will not be specified when resource is namespace
+	if cmd.Namespace == "" && cmd.Resource != "namespaces" {
 		return "", NewErrInvalidRunArgument("namespace")
 	}
 

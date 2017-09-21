@@ -36,6 +36,7 @@ func (b RequestFactory) NewRequest(name, namespace string) Request {
 
 	var req Request
 	switch name {
+
 	case "pods":
 		req = PodRequest{
 			service:   b.service,
