@@ -37,6 +37,11 @@ func (b RequestFactory) NewRequest(name, namespace string) Request {
 	var req Request
 	switch name {
 
+	case "namespaces":
+		req = NamespaceRequest{
+			service: b.service,
+		}
+		break
 	case "pods":
 		req = PodRequest{
 			service:   b.service,
@@ -55,6 +60,11 @@ func (b RequestFactory) NewRequest(name, namespace string) Request {
 			namespace: namespace,
 		}
 		break
+	case "replicasets":
+		req = ReplicaSetRequest{
+			service:   b.service,
+			namespace: namespace,
+		}
 	}
 
 	return req
